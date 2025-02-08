@@ -1,0 +1,18 @@
+# configurações e credenciais
+.env
+
+# ambiente virtual
+.venv
+
+# cache do python
+__pycache__/
+
+# cache do pytest
+.pytest_cache/
+
+# Celery
+*.pid
+*.log
+celerybeat-schedule
+celerybeat-schedule-shm
+celerybeat-schedule-wal
