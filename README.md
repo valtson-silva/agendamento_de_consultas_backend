@@ -50,6 +50,10 @@ docker-compose build
 # 2. Subir os containers
 docker-compose up -d
 ```
+Execute esse comando no terminal para executar os testes:
+```
+docker-compose run --rm web pytest
+```
 
 <br/>
 
