@@ -1,4 +1,4 @@
-# Sistema backend para o agendamento de consultas médicas
+# Sistema back-end para o agendamento de consultas médicas
 
 ## 📖  Descrição
 
