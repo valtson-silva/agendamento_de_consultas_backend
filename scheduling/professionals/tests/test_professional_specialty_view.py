@@ -37,15 +37,15 @@ def test_professional_specialty_create():
     client = APIClient()
     # Cria um usuário de teste
     user = User.objects.create_user(username="testuser", password="testpass")
-    # Obtém a url
+    
     url = reverse("professional_specialty_create")
-    # Faz o login
+    
     client.login(username="testuser", password="testpass")
     
-    # Cria a especialidade e o profissional
+    
     specialty = create_specialty()
     professional = create_professional()
-    # Faz a requisição post
+    
     response = client.post(url, {
         "specialty": specialty.id,
         "professional": professional.id
@@ -64,11 +64,11 @@ def test_professional_specialty_list():
     user = User.objects.create_user(username="testuser", password="testpass")
     # Cria um registro
     professionalSpecialty = create_professional_specialty()
-    # Obtém a url
+    
     url = reverse("professional_specialty_list", args=[professionalSpecialty.professional.id])
-    # Faz o login
+    
     client.login(username="testuser", password="testpass")
-    # Faz a requisição get
+    
     response = client.get(url)
     # Verifica se o status retornado foi 200 OK
     assert response.status_code == 200
@@ -80,16 +80,16 @@ def test_specialty_professional_list():
     
     # Simula um cliente HTTP
     client = APIClient()
-    # Cria um usuário de teste
+    
     user = User.objects.create_user(username="testuser", password="testpass")
-    # Cria um registro
+    
     professionalSpecialty = create_professional_specialty()
-    # Obtém a url
+    
     url = reverse("specialty_professional_list", args=[professionalSpecialty.specialty.id])
-    # Faz o login
+    
     client.login(username="testuser", password="testpass")
-    # Faz a requisição get
+    
     response = client.get(url)
-    # Verifica se o status retornado foi 200 OK
+    
     assert response.status_code == 200
     
