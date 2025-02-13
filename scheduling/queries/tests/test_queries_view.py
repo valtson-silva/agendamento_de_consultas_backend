@@ -59,17 +59,17 @@ def test_query_create():
     client = APIClient()
     # Cria um usuário de teste
     user = User.objects.create_user(username="testuser", password="testpass")
-    # Obtém a url
+    
     url = reverse("query_create")
-    # Faz o login
+    
     client.login(username="testuser", password="testpass")
     
-    # Cria o paciente, o profissional e a especialidade
+    
     patient = create_patient()
     professional = create_professional()
     specialty = create_specialty()
     
-    # Faz a requisição post
+    
     response = client.post(url,
         {
             "patient": patient.id,
@@ -87,17 +87,17 @@ def test_query_create():
     
 @pytest.mark.django_db
 def test_queries_list():
-    # Simula um cliente HTTP
+    
     client = APIClient()
-    # Cria um usuário de teste
+    
     user = User.objects.create_user(username="testuser", password="testpass")
-    # Obtém a url
+    
     url = reverse("queries_list")
-    # Faz o login
+    
     client.login(username="testuser", password="testpass")
-    # Faz a requisição get
+    
     response = client.get(url)
-    # Verifica se o status retornado foi 200 OK
+    
     assert response.status_code == 200
     
 
@@ -105,19 +105,19 @@ def test_queries_list():
 def test_queries_professional_list():
     # Testa obter as consultas de um profissional
     
-    # Simula um cliente HTTP
+    
     client = APIClient()
-    # Cria um usuário de teste
+    
     user = User.objects.create_user(username="testuser", password="testpass")
-    # Cria a consulta
+    
     query = create_query()
-    # Obtém a url
+    
     url = reverse("queries_professional_list", args=[query.professional.id])
-    # Faz o login
+    
     client.login(username="testuser", password="testpass")
-    # Faz a requisição get
+    
     response = client.get(url)
-    # Verifica se o status retornado foi 200 OK
+    
     assert response.status_code == 200
     
     
@@ -125,19 +125,19 @@ def test_queries_professional_list():
 def test_queries_patient_list():
     # Testa obter as consultas de um paciente
     
-    # Simula um cliente HTTP
+    
     client = APIClient()
-    # Cria um usuário de teste
+    
     user = User.objects.create_user(username="testuser", password="testpass")
-    # Cria a consulta
+
     query = create_query()
-    # Obtém a url
+    
     url = reverse("queries_patient_list", args=[query.patient.id])
-    # Faz o login
+    
     client.login(username="testuser", password="testpass")
-    # Faz a requisição get
+    
     response = client.get(url)
-    # Verifica se o status retornado foi 200 OK
+    
     assert response.status_code == 200
     
   
@@ -145,18 +145,18 @@ def test_queries_patient_list():
 def test_queries_specialty_list():
     # Testa obter as consultas de uma especialidade
     
-    # Simula um cliente HTTP
+    
     client = APIClient()
-    # Cria um usuário de teste
+    
     user = User.objects.create_user(username="testuser", password="testpass")
-    # Cria a consulta
+    
     query = create_query()
-    # Obtém a url
+    
     url = reverse("queries_specialty_list", args=[query.specialty.id])
-    # Faz o login
+    
     client.login(username="testuser", password="testpass")
-    # Faz a requisição get
+    
     response = client.get(url)
-    # Verifica se o status retornado foi 200 OK
+    
     assert response.status_code == 200
       
