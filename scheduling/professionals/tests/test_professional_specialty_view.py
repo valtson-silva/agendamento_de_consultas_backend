@@ -58,11 +58,11 @@ def test_professional_specialty_create():
 def test_professional_specialty_list():
     # Testa obter todas as especialidades de um profissional
     
-    # Simula um cliente HTTP
+    
     client = APIClient()
-    # Cria um usuário de teste
+    
     user = User.objects.create_user(username="testuser", password="testpass")
-    # Cria um registro
+    
     professionalSpecialty = create_professional_specialty()
     
     url = reverse("professional_specialty_list", args=[professionalSpecialty.professional.id])
@@ -78,7 +78,7 @@ def test_professional_specialty_list():
 def test_specialty_professional_list():
     # Testa obter todos os profissionais de uma especialidade
     
-    # Simula um cliente HTTP
+    
     client = APIClient()
     
     user = User.objects.create_user(username="testuser", password="testpass")
