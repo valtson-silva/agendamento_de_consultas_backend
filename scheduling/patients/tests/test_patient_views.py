@@ -7,9 +7,9 @@ from django.contrib.auth.models import User
 def test_patient_create():
     # Simula um cliente HTTP
     client = APIClient()
-    # Obtém a url
+    
     url = reverse("patient_create")
-    # Faz a requisição post
+    
     response = client.post(url,
         {
             "name": "joão",
@@ -30,11 +30,11 @@ def test_patient_list():
     client = APIClient()
     # Cria um usuário de teste
     user = User.objects.create_user(username="testuser", password="testpass")
-    # Obtém a url
+    
     url = reverse("patient_list")
-    # Faz o login
+    
     client.login(username="testuser", password="testpass")
-    # Faz a requisição get
+    
     response = client.get(url)
     # Verifica se o status retornado foi 200 OK
     assert response.status_code == 200
