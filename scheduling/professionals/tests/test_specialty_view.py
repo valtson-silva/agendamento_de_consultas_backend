@@ -9,11 +9,11 @@ def test_specialty_create():
     client = APIClient()
     # Cria um usuário de teste
     user = User.objects.create_user(username="testuser", password="testpass")
-    # Obtém a url
+    
     url = reverse("specialty_create")
-    # Faz o login
+    
     client.login(username="testuser", password="testpass")
-    # Faz a requisição post
+    
     response = client.post(url,
         {
             "name": "Cardiologia"
@@ -26,15 +26,15 @@ def test_specialty_create():
 
 @pytest.mark.django_db
 def test_professional_list():
-    # Simula um cliente HTTP
+    
     client = APIClient()
-    # Cria um usuário de teste
+    
     user = User.objects.create_user(username="testuser", password="testpass")
-    # Obtém a url
+    
     url = reverse("specialty_list")
-    # Faz o login
+    
     client.login(username="testuser", password="testpass")
-    # Faz a requisição get
+    
     response = client.get(url)
     # Verifica se o status retornado foi 200 OK
     assert response.status_code == 200
