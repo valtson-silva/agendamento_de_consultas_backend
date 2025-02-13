@@ -26,10 +26,10 @@ class UserLogarView(APIView):
         if user is not None:
             # Faz o login do usuário
             login(request, user)
-            # Retorna uma mensagem e o status 200
+            
             return Response({"message": "Login realizado com sucesso."}, status=status.HTTP_200_OK)
         else:
-            # Retorna uma mensagem e o status 401
+            
             return Response({"message": "Credenciais inválidas."}, status=status.HTTP_401_UNAUTHORIZED)
         
 class LogoutView(APIView):
@@ -41,6 +41,6 @@ class LogoutView(APIView):
     def post(self, request):
         # Faz o logout
         logout(request)
-        # Retorna uma mensagem e o status 200
+        
         return Response({"message": "Logout realizado com sucesso."}, status=status.HTTP_200_OK)
     
