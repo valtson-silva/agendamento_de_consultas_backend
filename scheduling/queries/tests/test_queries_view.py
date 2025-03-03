@@ -11,7 +11,6 @@ from datetime import timedelta
 date_of_consultation = now() + timedelta(days=2)
 
 def create_professional():
-    # Cria um profissional
     return Professionals.objects.create(
         name="João",
         email="joao@email.com",
@@ -21,7 +20,6 @@ def create_professional():
     )
     
 def create_patient():
-    # Cria um paciente
     return Patients.objects.create(
         name="Alfredo",
         email="alfredo@email.com",
@@ -31,14 +29,11 @@ def create_patient():
     )
     
 def create_specialty():
-    # Cria uma especialidade
     return Specialty.objects.create(
         name="Cardiologia"
     )
     
 def create_query():
-    # Cria uma query
-    
     professional = create_professional()
     specialty = create_specialty()
     patient = create_patient()
@@ -55,20 +50,14 @@ def create_query():
 
 @pytest.mark.django_db
 def test_query_create():
-    # Simula um cliente HTTP
     client = APIClient()
-    # Cria um usuário de teste
     user = User.objects.create_user(username="testuser", password="testpass")
-    
     url = reverse("query_create")
-    
     client.login(username="testuser", password="testpass")
-    
     
     patient = create_patient()
     professional = create_professional()
     specialty = create_specialty()
-    
     
     response = client.post(url,
         {
@@ -81,19 +70,14 @@ def test_query_create():
         }
     )
     
-    # Verifica se o status retornado foi 201 created
     assert response.status_code == 201
     
     
 @pytest.mark.django_db
 def test_queries_list():
-    
     client = APIClient()
-    
     user = User.objects.create_user(username="testuser", password="testpass")
-    
     url = reverse("queries_list")
-    
     client.login(username="testuser", password="testpass")
     
     response = client.get(url)
@@ -105,15 +89,10 @@ def test_queries_list():
 def test_queries_professional_list():
     # Testa obter as consultas de um profissional
     
-    
     client = APIClient()
-    
     user = User.objects.create_user(username="testuser", password="testpass")
-    
     query = create_query()
-    
     url = reverse("queries_professional_list", args=[query.professional.id])
-    
     client.login(username="testuser", password="testpass")
     
     response = client.get(url)
@@ -125,15 +104,10 @@ def test_queries_professional_list():
 def test_queries_patient_list():
     # Testa obter as consultas de um paciente
     
-    
     client = APIClient()
-    
     user = User.objects.create_user(username="testuser", password="testpass")
-
     query = create_query()
-    
     url = reverse("queries_patient_list", args=[query.patient.id])
-    
     client.login(username="testuser", password="testpass")
     
     response = client.get(url)
@@ -145,15 +119,10 @@ def test_queries_patient_list():
 def test_queries_specialty_list():
     # Testa obter as consultas de uma especialidade
     
-    
     client = APIClient()
-    
     user = User.objects.create_user(username="testuser", password="testpass")
-    
     query = create_query()
-    
     url = reverse("queries_specialty_list", args=[query.specialty.id])
-    
     client.login(username="testuser", password="testpass")
     
     response = client.get(url)
