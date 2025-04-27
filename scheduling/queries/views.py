@@ -1,14 +1,12 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from .serializers import QuerySerializer
 from .models import Queries
+from professionals.views_professionals import PermissionForProfessionals
 
 class QueryCreateView(APIView):
     # Salva uma consulta no banco de dados
-    
-    permission_classes = [IsAuthenticated]
     
     def post(self, request):
         serializer = QuerySerializer(data=request.data)
@@ -23,7 +21,7 @@ class QueryCreateView(APIView):
 class QueriesListView(APIView):
     # Mostra todos as consultas salvas no banco de dados
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [PermissionForProfessionals]
     
     def get(self, request):
         queries = Queries.objects.all()
@@ -33,8 +31,6 @@ class QueriesListView(APIView):
     
 class QueryDetailView(APIView):
     # Mostra os detalhes de uma consulta que está no banco de dados
-    
-    permission_classes = [IsAuthenticated]
     
     def get(self, request, id):
         try:
@@ -47,8 +43,6 @@ class QueryDetailView(APIView):
         
 class QueryUpdateView(APIView):
     # Atualiza os dados de uma consulta
-    
-    permission_classes = [IsAuthenticated]
     
     def put(self, request, id):
         try:
@@ -67,8 +61,6 @@ class QueryUpdateView(APIView):
 class QueryDeleteView(APIView):
     # Deleta uma consulta do banco de dados
     
-    permission_classes = [IsAuthenticated]
-    
     def delete(self, request, id):
         try:
             query = Queries.objects.get(id=id)
@@ -81,7 +73,7 @@ class QueryDeleteView(APIView):
 class QueryProfessionalListView(APIView):
     # Mostra todas as consultas referentes a um profissional
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [PermissionForProfessionals]
     
     def get(self, request, professional_id):
         try:
@@ -95,8 +87,6 @@ class QueryProfessionalListView(APIView):
 class QueryPatientListView(APIView):
     # Mostra todas as consultas referentes a um paciente
     
-    permission_classes = [IsAuthenticated]
-    
     def get(self, request, patient_id):
         try:
             queries = Queries.objects.filter(patient=patient_id)
@@ -109,7 +99,7 @@ class QueryPatientListView(APIView):
 class QuerySpecialtyListView(APIView):
     # Mostra todas as consultas referentes a uma especialidade
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [PermissionForProfessionals]
     
     def get(self, request, specialty_id):
         try:

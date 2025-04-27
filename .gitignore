@@ -2,7 +2,7 @@
 .env
 
 # ambiente virtual
-.venv
+venv
 
 # cache do python
 __pycache__/

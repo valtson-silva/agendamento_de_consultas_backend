@@ -1,12 +1,13 @@
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group, Permission
 from professionals.models import Professionals, Specialty
 from patients.models import Patients
 from queries.models import Queries
 from django.utils.timezone import now
 from datetime import timedelta
+from rest_framework.authtoken.models import Token
 
 date_of_consultation = now() + timedelta(days=2)
 
@@ -53,7 +54,9 @@ def test_query_create():
     client = APIClient()
     user = User.objects.create_user(username="testuser", password="testpass")
     url = reverse("query_create")
-    client.login(username="testuser", password="testpass")
+    
+    token = Token.objects.create(user=user)
+    client.credentials(HTTP_AUTHORIZATION="Token "+ token.key)
     
     patient = create_patient()
     professional = create_professional()
@@ -78,7 +81,14 @@ def test_queries_list():
     client = APIClient()
     user = User.objects.create_user(username="testuser", password="testpass")
     url = reverse("queries_list")
-    client.login(username="testuser", password="testpass")
+    
+    group, created = Group.objects.get_or_create(name="Professionals")
+    perm = Permission.objects.get(codename="permission_for_professionals")
+    group.permissions.add(perm)
+    user.groups.add(group)
+    
+    token = Token.objects.create(user=user)
+    client.credentials(HTTP_AUTHORIZATION="Token " + token.key)
     
     response = client.get(url)
     
@@ -93,7 +103,14 @@ def test_queries_professional_list():
     user = User.objects.create_user(username="testuser", password="testpass")
     query = create_query()
     url = reverse("queries_professional_list", args=[query.professional.id])
-    client.login(username="testuser", password="testpass")
+    
+    group, created = Group.objects.get_or_create(name="Professionals")
+    perm = Permission.objects.get(codename="permission_for_professionals")
+    group.permissions.add(perm)
+    user.groups.add(group)
+    
+    token = Token.objects.create(user=user)
+    client.credentials(HTTP_AUTHORIZATION="Token " + token.key)
     
     response = client.get(url)
     
@@ -108,7 +125,9 @@ def test_queries_patient_list():
     user = User.objects.create_user(username="testuser", password="testpass")
     query = create_query()
     url = reverse("queries_patient_list", args=[query.patient.id])
-    client.login(username="testuser", password="testpass")
+    
+    token = Token.objects.create(user=user)
+    client.credentials(HTTP_AUTHORIZATION="Token " + token.key)
     
     response = client.get(url)
     
@@ -123,7 +142,14 @@ def test_queries_specialty_list():
     user = User.objects.create_user(username="testuser", password="testpass")
     query = create_query()
     url = reverse("queries_specialty_list", args=[query.specialty.id])
-    client.login(username="testuser", password="testpass")
+    
+    group, created = Group.objects.get_or_create(name="Professionals")
+    perm = Permission.objects.get(codename="permission_for_professionals")
+    group.permissions.add(perm)
+    user.groups.add(group)
+    
+    token = Token.objects.create(user=user)
+    client.credentials(HTTP_AUTHORIZATION="Token " + token.key)
     
     response = client.get(url)
     

@@ -1,14 +1,28 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import BasePermission, AllowAny
 from .models import Professionals
 from .serializers import ProfessionalSerializer
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group, Permission
 from django.contrib.auth.hashers import make_password
+
+class PermissionForProfessionals(BasePermission):
+    # Criação de uma permissão customizada
+    
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        if request.user.has_perm("professionals.permission_for_professionals"):
+            return True
+        
+        return False
 
 class ProfessionalCreateView(APIView):
     # Salva um profissional no banco de dados
+    
+    permission_classes = [AllowAny]
     
     def post(self, request):
         serializer = ProfessionalSerializer(data=request.data)
@@ -17,11 +31,13 @@ class ProfessionalCreateView(APIView):
             serializer.save()
             
             # Cria o usuário com a senha criptografada
-            User.objects.create_user(
+            user = User.objects.create_user(
                 username=request.data["name"],
                 password=request.data["password"],
                 email=request.data["email"]
             )
+            group = Group.objects.get(name="Professionals")
+            user.groups.add(group)
             
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
@@ -30,8 +46,6 @@ class ProfessionalCreateView(APIView):
      
 class ProfessionalListView(APIView):
     # Mostra todos os profissionais salvos no banco de dados
-    
-    permission_classes = [IsAuthenticated]
     
     def get(self, request):
         professionals = Professionals.objects.all()
@@ -42,8 +56,6 @@ class ProfessionalListView(APIView):
     
 class ProfessionalDetailView(APIView):
     # Mostra os detalhes de um profissional que está no banco de dados
-    
-    permission_classes = [IsAuthenticated]
     
     def get(self, request, id):
         try:
@@ -57,7 +69,7 @@ class ProfessionalDetailView(APIView):
 class ProfessionalUpdateView(APIView):
     # Atualiza os dados de um profissional
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [PermissionForProfessionals]
     
     def put(self, request, id):
         try:
@@ -83,7 +95,7 @@ class ProfessionalUpdateView(APIView):
 class ProfessionalDeleteView(APIView):
     # Deleta um profissional do banco de dados
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [PermissionForProfessionals]
     
     def delete(self, request, id):
         try:

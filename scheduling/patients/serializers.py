@@ -16,6 +16,11 @@ class PatientsSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Esse email já está em uso!")
         return value
     
+    def validate_name(self, value):
+        if Professionals.objects.filter(name=value).exists() or Patients.objects.filter(name=value).exists():
+            raise serializers.ValidationError("Esse name já está em uso!")
+        return value
+    
     def validate_password(self, value):
         # Criptografa a senha
         return make_password(value)

@@ -14,6 +14,11 @@ class Professionals(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     date_update = models.DateTimeField(auto_now=True)
     
+    class Meta:
+        permissions = [
+            ("permission_for_professionals", "Pode acessar informações gerais")
+        ]
+    
     
 class ProfessionalSpecialty(models.Model):
     specialty = models.ForeignKey(Specialty, on_delete=models.RESTRICT, null=False)

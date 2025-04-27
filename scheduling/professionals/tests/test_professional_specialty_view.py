@@ -1,8 +1,9 @@
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group, Permission
 from professionals.models import Professionals, Specialty, ProfessionalSpecialty
+from rest_framework.authtoken.models import Token
 
 def create_professional():
     return Professionals.objects.create(
@@ -32,7 +33,14 @@ def test_professional_specialty_create():
     client = APIClient()
     user = User.objects.create_user(username="testuser", password="testpass")
     url = reverse("professional_specialty_create")
-    client.login(username="testuser", password="testpass")
+    
+    group, created = Group.objects.get_or_create(name="Professionals")
+    perm = Permission.objects.get(codename="permission_for_professionals")
+    group.permissions.add(perm)
+    user.groups.add(group)
+    
+    token = Token.objects.create(user=user)
+    client.credentials(HTTP_AUTHORIZATION="Token " + token.key)
     
     specialty = create_specialty()
     professional = create_professional()
@@ -53,7 +61,9 @@ def test_professional_specialty_list():
     user = User.objects.create_user(username="testuser", password="testpass")
     professionalSpecialty = create_professional_specialty()
     url = reverse("professional_specialty_list", args=[professionalSpecialty.professional.id])
-    client.login(username="testuser", password="testpass")
+    
+    token = Token.objects.create(user=user)
+    client.credentials(HTTP_AUTHORIZATION="Token " + token.key)
     
     response = client.get(url)
     
@@ -68,7 +78,9 @@ def test_specialty_professional_list():
     user = User.objects.create_user(username="testuser", password="testpass")
     professionalSpecialty = create_professional_specialty()
     url = reverse("specialty_professional_list", args=[professionalSpecialty.specialty.id])
-    client.login(username="testuser", password="testpass")
+    
+    token = Token.objects.create(user=user)
+    client.credentials(HTTP_AUTHORIZATION="Token " + token.key)
     
     response = client.get(url)
     

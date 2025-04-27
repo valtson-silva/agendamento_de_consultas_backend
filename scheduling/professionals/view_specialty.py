@@ -1,14 +1,14 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from .serializers import SpecialtySerializer
 from .models import Specialty
+from .views_professionals import PermissionForProfessionals
 
 class SpecialtyCreateView(APIView):
     # Salva um especialidade no banco de dados 
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [PermissionForProfessionals]
     
     def post(self, request):
         serializer = SpecialtySerializer(data=request.data)
@@ -23,8 +23,6 @@ class SpecialtyCreateView(APIView):
 class SpecialtyListView(APIView):
     # Mostra todas as especialidades salvas no banco de dados
     
-    permission_classes = [IsAuthenticated]
-    
     def get(self, request):
         specialties = Specialty.objects.all()
         serializer = SpecialtySerializer(specialties, many=True)
@@ -33,8 +31,6 @@ class SpecialtyListView(APIView):
     
 class SpecialtyDetailView(APIView):
     # Mostra os detalhes de uma especialidade
-    
-    permission_classes = [IsAuthenticated]
     
     def get(self, request, id):
         try:
@@ -49,7 +45,7 @@ class SpecialtyDetailView(APIView):
 class SpecialtyUpdateView(APIView):
     # Atualiza os dados de uma especialidade
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [PermissionForProfessionals]
     
     def put(self, request, id):
         try:
@@ -68,7 +64,7 @@ class SpecialtyUpdateView(APIView):
 class SpecialtyDeleteView(APIView):
     # Deleta um especialidade do banco de dados
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [PermissionForProfessionals]
     
     def delete(self, request, id):
         try:

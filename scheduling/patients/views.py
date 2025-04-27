@@ -1,14 +1,17 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from .models import Patients
+from professionals.views_professionals import PermissionForProfessionals
 from .serializers import PatientsSerializer
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 
 class PatientCreateView(APIView):
     # Salva um paciente no banco de dados
+    
+    permission_classes = [AllowAny]
     
     def post(self, request):
         serializer = PatientsSerializer(data=request.data)
@@ -29,7 +32,7 @@ class PatientCreateView(APIView):
 class PatientsListView(APIView):
     # Mostra todos os pacientes salvos no banco de dados
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [PermissionForProfessionals]
     
     def get(self, request):
         patients = Patients.objects.all()
@@ -39,8 +42,6 @@ class PatientsListView(APIView):
     
 class PatientDetailView(APIView):
     # Mostra os detalhes de um paciente que está no banco de dados
-    
-    permission_classes = [IsAuthenticated]
     
     def get(self, request, id):
         try:
@@ -53,8 +54,6 @@ class PatientDetailView(APIView):
 
 class PatientUpdateView(APIView):
     # Atualiza os dados de um paciente
-    
-    permission_classes = [IsAuthenticated]
     
     def put(self, request, id):
         try:
@@ -78,8 +77,6 @@ class PatientUpdateView(APIView):
         
 class PatientDeleteView(APIView):
     # Deleta um paciente do banco de dados
-    
-    permission_classes = [IsAuthenticated]
     
     def delete(self, request, id):
         try:
