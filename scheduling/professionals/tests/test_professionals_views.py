@@ -4,7 +4,7 @@ from rest_framework.test import APIClient
 from django.contrib.auth.models import User, Group, Permission
 from rest_framework.authtoken.models import Token
 
-from patients.models import Patients
+from professionals.models.professionals import Professionals
 
 
 def get_authenticated_client():
@@ -13,28 +13,9 @@ def get_authenticated_client():
     token = Token.objects.create(user=user)
     client.credentials(HTTP_AUTHORIZATION="Token " + token.key)
     return client
-    
-    
-@pytest.mark.django_db
-def test_patient_create():
-    client = APIClient()
-    url = reverse("patients-list")
-    data = {
-            "name": "joão",
-            "email": "joao@email.com",
-            "password": "1111111",
-            "address": "Rua de teste",
-            "phone": "9999999999"
-        }
-    
-    response = client.post(url, data, format="json")
-    
-    assert response.status_code == 201
-    assert response.data["name"] == "joão"
-    
 
-@pytest.mark.django_db
-def test_patient_list():
+
+def get_authenticated_client_permission():
     client = APIClient()
     user = User.objects.create_user(username="testuser", password="testpass")
     
@@ -43,29 +24,55 @@ def test_patient_list():
     group.permissions.add(perm)
     user.groups.add(group)
     
-    Patients.objects.create(
-        name="Maria", email="maria@email.com", password="senha",
-        address="Rua A", phone="123456789"
-    )
-    
     token = Token.objects.create(user=user)
     client.credentials(HTTP_AUTHORIZATION="Token " + token.key)
     
-    url = reverse("patients-list")
-    response = client.get(url)
+    return client
 
-    assert response.status_code == 200
-    
-    
+
 @pytest.mark.django_db
-def test_patient_retrieve():
+def test_professional_create():
+    client = APIClient()
+    url = reverse("professionals-list")
+    
+    group, created = Group.objects.get_or_create(name="Professionals")
+    perm = Permission.objects.get(codename="permission_for_professionals")
+    group.permissions.add(perm)
+    
+    response = client.post(url,
+        {
+            "name": "joão",
+            "email": "joao@email.com",
+            "password": "1111111",
+            "address": "Rua de teste",
+            "phone": "9999999999"
+        },
+        format="json"
+    )
+
+    assert response.status_code == 201
+    assert response.data["name"] == "joão"
+    
+
+@pytest.mark.django_db
+def test_professional_list():
     client = get_authenticated_client()
-    patient = Patients.objects.create(
+    url = reverse("professionals-list")
+    
+    response = client.get(url)
+    
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_professional_retrieve():
+    client = get_authenticated_client()
+    professional = Professionals.objects.create(
         name="Carlos", email="carlos@email.com", password="senha",
         address="Rua B", phone="888888888"
     )
     
-    url = reverse("patients-detail", args=[patient.id])
+    url = reverse("professionals-detail", args=[professional.id])
     response = client.get(url)
     
     assert response.status_code == 200
@@ -73,13 +80,13 @@ def test_patient_retrieve():
     
 
 @pytest.mark.django_db
-def test_patient_update():
-    client = get_authenticated_client()
-    patient = Patients.objects.create(
+def test_professional_update():
+    client = get_authenticated_client_permission()
+    professional = Professionals.objects.create(
         name="Ana", email="ana@email.com", password="senha",
         address="Rua C", phone="777777777"
     )
-    url = reverse("patients-detail", args=[patient.id])
+    url = reverse("professionals-detail", args=[professional.id])
     data = {
         "name": "Ana Paula",
         "email": "ana@email.com",
@@ -95,22 +102,24 @@ def test_patient_update():
     
     
 @pytest.mark.django_db
-def test_patient_partial_update():
-    client = get_authenticated_client()
-    patient = Patients.objects.create(
+def test_professional_partial_update():
+    client = get_authenticated_client_permission()
+    professional = Professionals.objects.create(
         name="Pedro", email="pedro@email.com", password="senha",
         address="Rua D", phone="666666666"
     )
-    url = reverse("patients-detail", args=[patient.id])
+    url = reverse("professionals-detail", args=[professional.id])
+    
     response = client.patch(url, {"phone": "000000000"}, format="json")
+    
     assert response.status_code == 200
     assert response.data["phone"] == "000000000"
     
 
 @pytest.mark.django_db
-def test_patient_delete():
-    client = get_authenticated_client()
-    patient = Patients.objects.create(
+def test_professional_delete():
+    client = get_authenticated_client_permission()
+    professional = Professionals.objects.create(
         name="Luiza", email="luiza@email.com", password="senha",
         address="Rua E", phone="555555555"
     )
@@ -120,8 +129,9 @@ def test_patient_delete():
         email="luiza@email.com"
     )
     
-    url = reverse("patients-detail", args=[patient.id])
+    url = reverse("professionals-detail", args=[professional.id])
     response = client.delete(url)
     
     assert response.status_code == 204
-    assert not Patients.objects.filter(id=patient.id).exists()
+    assert not Professionals.objects.filter(id=professional.id).exists()
+    
