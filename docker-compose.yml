@@ -29,6 +29,11 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - CELERY_BROKER_URL=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=${DEBUG}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - DJANGO_ENV=${DJANGO_ENV}
     depends_on:
       - db
       - redis
@@ -39,8 +44,15 @@ services:
     networks:
       - default
     volumes:
-      - ./appointment_scheduling:/appointment_scheduling
-    command: /bin/bash -c "python scripts/create_group.py && python manage.py migrate && gunicorn appointment_scheduling.wsgi:application --bind 0.0.0.0:8000"
+      - ./scheduling:/app/scheduling
+    working_dir: /app/scheduling
+    command: sh -c "
+        if [ \"$DJANGO_ENV\" = \"production\" ]; then
+          python scripts/create_group.py && python manage.py migrate && gunicorn appointment_scheduling.wsgi:application --bind 0.0.0.0:8000;
+        else
+          python scripts/create_group.py && python manage.py migrate && python manage.py runserver 0.0.0.0:8000;
+        fi 
+      "
 
   celery_worker:
     build: .
@@ -50,6 +62,9 @@ services:
       - redis
     env_file:
       - .env
+    volumes: 
+      - ./scheduling:/app/scheduling
+    working_dir: /app/scheduling
     command: ["celery", "-A", "appointment_scheduling", "worker", "--loglevel=info"]
 
   celery_beat:
@@ -60,7 +75,16 @@ services:
       - redis
     env_file:
       - .env
-    command: ["celery", "-A", "appointment_scheduling", "beat", "--loglevel=info"]
+    volumes: 
+      - ./scheduling:/app/scheduling
+    working_dir: /app/scheduling
+    command: >
+      sh -c "
+        echo 'Executando migrations para celery_beat...';
+        python manage.py migrate &&
+        echo 'Iniciando celery beat...';
+        celery -A appointment_scheduling beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+      "
 
   test:
     build: .

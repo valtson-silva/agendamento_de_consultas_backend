@@ -1,7 +1,9 @@
 from rest_framework import serializers
-from .models import Patients
-from professionals.models import Professionals
 from django.contrib.auth.hashers import make_password
+
+from .models import Patients
+from professionals.models.professionals import Professionals
+
 
 class PatientsSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -22,7 +24,6 @@ class PatientsSerializer(serializers.ModelSerializer):
         return value
     
     def validate_password(self, value):
-        # Criptografa a senha
         return make_password(value)
 
 

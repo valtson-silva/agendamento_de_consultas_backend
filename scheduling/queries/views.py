@@ -1,112 +1,105 @@
 from rest_framework import status
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.core.cache import cache
+from rest_framework.permissions import IsAuthenticated
+
 from .serializers import QuerySerializer
 from .models import Queries
-from professionals.views_professionals import PermissionForProfessionals
+from professionals.views.professionals_views import PermissionForProfessionals
+from .queries_service import query_patient, query_professional, query_specialty
 
-class QueryCreateView(APIView):
-    # Salva uma consulta no banco de dados
-    
-    def post(self, request):
-        serializer = QuerySerializer(data=request.data)
-        
-        if serializer.is_valid():
-            serializer.save()
-            
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response({"error": "Dados informados inválidos."}, status=status.HTTP_400_BAD_REQUEST)
-        
-class QueriesListView(APIView):
-    # Mostra todos as consultas salvas no banco de dados
-    
-    permission_classes = [PermissionForProfessionals]
-    
-    def get(self, request):
-        queries = Queries.objects.all()
-        serializer = QuerySerializer(queries, many=True)
-        
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-class QueryDetailView(APIView):
-    # Mostra os detalhes de uma consulta que está no banco de dados
-    
-    def get(self, request, id):
-        try:
-            query = Queries.objects.get(id=id)
-            serializer = QuerySerializer(query)
-            
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except:
-            return Response({"error": "Não existe uma consulta com esse ID."}, status=status.HTTP_404_NOT_FOUND)
-        
-class QueryUpdateView(APIView):
-    # Atualiza os dados de uma consulta
-    
-    def put(self, request, id):
-        try:
-            query = Queries.objects.get(id=id)
-            serializer = QuerySerializer(query, data=request.data)
-            
-            if serializer.is_valid():
-                serializer.save()
-                
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response({"error": "Dados informados inválidos."}, status=status.HTTP_400_BAD_REQUEST)
-        except:
-            return Response({"error": "Não existe uma consulta com esse ID."}, status=status.HTTP_404_NOT_FOUND)
 
-class QueryDeleteView(APIView):
-    # Deleta uma consulta do banco de dados
+class QueriesViewSet(ModelViewSet):
+    queryset = Queries.objects.all()
+    serializer_class = QuerySerializer
     
-    def delete(self, request, id):
-        try:
-            query = Queries.objects.get(id=id)
-            query.delete()
-            
-            return Response({"success": "Consulta deletada com sucesso."}, status=status.HTTP_200_OK)
-        except:
-            return Response({"error": "Não existe uma consulta com esse ID."}, status=status.HTTP_404_NOT_FOUND)
+    
+    def get_permissions(self):
+        if self.action == "list":
+            return [PermissionForProfessionals()]
+        return [IsAuthenticated()]
+    
+    
+    def list(self, request, *args, **kwargs):
+        cache_key = "queries_list"
+        cached_data = cache.get(cache_key)
+        
+        if cached_data:
+            return Response(cached_data, status=status.HTTP_200_OK)
+        
+        response = super().list(request, *args, **kwargs)
+        cache.set(cache_key, response.data, timeout=60 * 5)
+        return response
+    
+    
+    def retrieve(self, request, *args, **kwargs):
+        query_id = kwargs.get("pk")
+        cache_key = f"query_detail_{query_id}"
+        cached_data = cache.get(cache_key)
+        
+        if cached_data:
+            return Response(cached_data, status=status.HTTP_200_OK)
+        
+        response = super().retrieve(request, *args, **kwargs)
+        cache.set(cache_key, response.data, timeout=60 * 5)
+        return response
+    
+    
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        cache.delete("queries_list")
+        
+    
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        cache.delete("queries_list")
+        cache.delete(f"query_detail_{instance.id}")
+        
+    
+    def perform_destroy(self, instance):
+        cache.delete("queries_list")
+        cache.delete(f"query_detail_{instance.id}")
+        instance.delete()
+        
         
 class QueryProfessionalListView(APIView):
-    # Mostra todas as consultas referentes a um profissional
+    """Mostra todas as consultas referentes a um profissional"""
     
     permission_classes = [PermissionForProfessionals]
     
     def get(self, request, professional_id):
         try:
-            queries = Queries.objects.filter(professional=professional_id)
-            serializer = QuerySerializer(queries, many=True)
-            
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except:
-            return Response({"error": "Não existe existe consulta com esse profissional."}, status=status.HTTP_404_NOT_FOUND)
+            queries = query_professional(professional_id)
+        except ValueError as e:
+            return Response({"success": False, "message": str(e)}, status=status.HTTP_404_NOT_FOUND)
+        
+        return Response(queries, status=status.HTTP_200_OK)
+
 
 class QueryPatientListView(APIView):
-    # Mostra todas as consultas referentes a um paciente
+    """Mostra todas as consultas referentes a um paciente"""
     
     def get(self, request, patient_id):
         try:
-            queries = Queries.objects.filter(patient=patient_id)
-            serializer = QuerySerializer(queries, many=True)
-            
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except:
-            return Response({"error": "Não existe existe consulta com esse paciente."}, status=status.HTTP_404_NOT_FOUND)
+            queries = query_patient(patient_id)
+        except ValueError as e:
+            return Response({"success": False, "message": str(e)}, status=status.HTTP_404_NOT_FOUND)
+        
+        return Response(queries, status=status.HTTP_200_OK)
+        
         
 class QuerySpecialtyListView(APIView):
-    # Mostra todas as consultas referentes a uma especialidade
+    """Mostra todas as consultas referentes a uma especialidade"""
     
     permission_classes = [PermissionForProfessionals]
     
     def get(self, request, specialty_id):
         try:
-            queries = Queries.objects.filter(specialty=specialty_id)
-            serializer = QuerySerializer(queries, many=True)
-            
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except:
-            return Response({"error": "Não existe existe consulta com essa especialidade."}, status=status.HTTP_404_NOT_FOUND)
+            queries = query_specialty(specialty_id)
+        except ValueError as e:
+            return Response({"success": False, "message": str(e)}, status=status.HTTP_404_NOT_FOUND)
+        
+        return Response(queries, status=status.HTTP_200_OK)
             

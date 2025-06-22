@@ -1,14 +1,10 @@
-from django.urls import path
-from .views import (
-    PatientCreateView, PatientDeleteView, PatientDetailView,
-    PatientUpdateView, PatientsListView
-)
+from rest_framework.routers import DefaultRouter
 
-# Endpoints
-urlpatterns = [
-    path("", PatientsListView.as_view(), name="patient_list"),
-    path("<int:id>/", PatientDetailView.as_view(), name="patient_detail"),
-    path("create/", PatientCreateView.as_view(), name="patient_create"),
-    path("<int:id>/update/", PatientUpdateView.as_view(), name="patient_update"),
-    path("<int:id>/delete/", PatientDeleteView.as_view(), name="patient_delete")
-]
+from .views import PatientsViewSet
+
+
+router = DefaultRouter()
+router.register(r"api", PatientsViewSet, basename="patients")
+
+
+urlpatterns = router.urls

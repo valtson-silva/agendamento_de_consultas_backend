@@ -26,9 +26,12 @@ INSTALLED_APPS = [
     'patients',
     'professionals',
     'queries',
+    'authentication',
     'rest_framework',
     'rest_framework.authtoken',
     'django_celery_beat',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
 ]
 
 MIDDLEWARE = [
@@ -123,7 +126,26 @@ REST_FRAMEWORK = {
     ],
      'DEFAULT_PERMISSION_CLASSES': ( 
     'rest_framework.permissions.IsAuthenticated', 
-  ) 
+  ),
+     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'API de Agendamento de Consultas',
+    'DESCRIPTION': 'Documentação da API para gestão de profissionais, pacientes, consultas.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
 }
 
 

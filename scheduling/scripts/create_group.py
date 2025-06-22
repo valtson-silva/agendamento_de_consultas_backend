@@ -2,11 +2,13 @@ import os
 import django
 import sys
 
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'appointment_scheduling.settings')  
 django.setup()
 
 from django.contrib.auth.models import Group, Permission
+
 
 def create_group():
     if not Group.objects.filter(name="Professionals").exists():
